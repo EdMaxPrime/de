@@ -54,18 +54,25 @@ void draw() {  //draw function loops
   else if(place.equals("/game/create")) {
     background(250);
     text("Choose the dimensions of the simulation:",2,20);
-    button("10x10","grid(10;Go(/game/menu",5,24+(height/10));
-    button("25x25","grid(25;Go(/game/menu",5,24+2*(height/10));
-    button("40x40","grid(40;Go(/game/menu",5,24+3*(height/10));
-    button("50x50","grid(50;Go(/game/menu",5,24+4*(height/10));
-    button("100x100","grid(100;Go(/game/menu",5,24+5*(height/10));
-    button("200x200","grid(200;Go(/game/menu",5,24+6*(height/10));
-    button("400x400","error(That's going too far. Feature disabled.",5,24+7*(height/10));
-    button("Back", "Go(/help/instructions.rtf",5,24+7*(height/10));
-    text("recommended",(width/5)+4,2*(height/10)+38);
-    text("slow",(width/5)+4,4*(height/10)+38);
-    text("very slow",(width/5)+4,5*(height/10)+38);
-    text("just no",(width/5)+4,6*(height/10)+38);
+    button("5x5","grid(5;Go(/game/menu",ofWidth("3/10"),24+ofHeight("1/10"));
+    button("10x10","grid(10;Go(/game/menu",ofWidth("3/10"),24+2*(height/10));
+    button("25x25","grid(25;Go(/game/menu",ofWidth("3/10"),24+3*(height/10));
+    button("40x40","grid(40;Go(/game/menu",ofWidth("3/10"),24+4*(height/10));
+    button("50x50","grid(50;Go(/game/menu",ofWidth("3/10"),24+5*(height/10));
+    button("65x65","grid(65;Go(/game/menu",ofWidth("3/10"),24+6*(height/10));
+    button("80x80","grid(80;Go(/game/menu",ofWidth("3/10"),24+7*(height/10));
+    button("100x100","grid(100;Go(/game/menu",ofWidth("1/2"),24+ofHeight("1/10"));
+    button("115x115","grid(115;Go(/game/menu",ofWidth("1/2"),24+2*(height/10));
+    button("125x125","grid(125;Go(/game/menu",ofWidth("1/2"),24+3*(height/10));
+    button("140x140","grid(140;Go(/game/menu",ofWidth("1/2"),24+4*(height/10));
+    button("150x150","grid(150;Go(/game/menu",ofWidth("1/2"),24+5*(height/10));
+    button("175x175","grid(175;Go(/game/menu",ofWidth("1/2"),24+6*(height/10));
+    button("200x200","grid(200;GO(/game/menu",ofWidth("1/2"),24+7*(height/10));
+    button("Back", "Go(/help/instructions.rtf",5,24+8*(height/10));
+    //text("recommended",(width/5)+4,2*(height/10)+38); 25x25
+    //text("slow",(width/5)+4,4*(height/10)+38); 50x50
+    //text("very slow",(width/5)+4,5*(height/10)+38); 100x100
+    //text("just no",(width/5)+4,6*(height/10)+38); 200x200
   }
   else if(place.equals("/game/grid")) {
    redT=0; blueT=0; greenT=0;
