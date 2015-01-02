@@ -1,0 +1,3 @@
+interface Generator {
+  DPixel[][] generate();
+}
