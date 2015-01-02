@@ -44,7 +44,8 @@ void draw() {  //draw function loops
     background(250);
     textFont(f);
     text("    Welcome to Dynamic Equilibrium. This is a visualization of the concept. In nature things tend to reach a balance. On the screen you can create colored pixels and borders. When you run the simulation all of the pixels will try to balance out their colors with their neighbors. The borders will not allow colors to be transfered to them. This allows you to create interesting chain reactions.\n    Click here to start.",5,20,width-12,200);
-    text("version 1.6",5,height);
+    //text("version 1.6",5,height);
+    renderText("version 1.6 <rgb 255 0 0>BETA", 5, height);
     button("Play","Go(/game/create",5,200);
     button("Random","Go(/help/change.rtf",width/4,200);
     button("Help","Go(/help/keys.rtf",2*(width/4),200);
@@ -60,6 +61,7 @@ void draw() {  //draw function loops
     button("100x100","grid(100;Go(/game/menu",5,24+5*(height/10));
     button("200x200","grid(200;Go(/game/menu",5,24+6*(height/10));
     button("400x400","error(That's going too far. Feature disabled.",5,24+7*(height/10));
+    button("Back", "Go(/help/instructions.rtf",5,24+7*(height/10));
     text("recommended",(width/5)+4,2*(height/10)+38);
     text("slow",(width/5)+4,4*(height/10)+38);
     text("very slow",(width/5)+4,5*(height/10)+38);
@@ -235,6 +237,16 @@ int centerX(String t, int w, int x) { //This method returns the x position of ho
 }
 int centerY(String t, int h, int y) { //This method returns the y position of vertically aligned text
   return (h/2)+y+3;
+}
+int ofWidth(String fraction) { /*New in 1.6*/
+  int numerator = int(split(fraction, "/")[0]);
+  int denominator = int(split(fraction, "/")[1]);
+  return width * (numerator/denominator);
+}
+int ofHeight(String fraction) { /*New in 1.6*/
+  int numerator = int(split(fraction, "/")[0]);
+  int denominator = int(split(fraction, "/")[1]);
+  return height * (numerator/denominator);
 }
 boolean toggle(boolean b) {
   if(b) {return false;}

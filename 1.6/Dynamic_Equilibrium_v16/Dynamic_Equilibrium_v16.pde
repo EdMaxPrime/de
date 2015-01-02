@@ -44,7 +44,8 @@ void draw() {  //draw function loops
     background(250);
     textFont(f);
     text("    Welcome to Dynamic Equilibrium. This is a visualization of the concept. In nature things tend to reach a balance. On the screen you can create colored pixels and borders. When you run the simulation all of the pixels will try to balance out their colors with their neighbors. The borders will not allow colors to be transfered to them. This allows you to create interesting chain reactions.\n    Click here to start.",5,20,width-12,200);
-    text("version 1.6",5,height);
+    //text("version 1.6",5,height);
+    renderText("version 1.6 <rgb 255 0 0>BETA", 5, height);
     button("Play","Go(/game/create",5,200);
     button("Random","Go(/help/change.rtf",width/4,200);
     button("Help","Go(/help/keys.rtf",2*(width/4),200);
