@@ -118,9 +118,10 @@ void draw() {  //draw function loops
     holdme("-Blue","blue(-2",width/10+10+(width/5),(height/2)+(height/10));
     button("border "+strToggle(brush.border),"toggle(brdbrush",width/10+10+2*(width/5),(height/2)+(height/10));
     button("random "+strToggle(brush.random),"toggle(rndbrush",width/10+10+3*(width/5),(height/2)+(height/10));
-    slider(width/10+10, ofHeight("7/10"), "style(text:Red Range;set(rRange,$v", redRange, 6);
-    slider(width/10+10, ofHeight("8/10"), "style(text:Green Range;set(gRange,$v", greenRange, 6);
-    slider(width/10+10, ofHeight("9/10"), "style(text:Blue Range;set(bRange,$v", blueRange, 6);
+    String temp = ",width:" + ofWidth("4/5");
+    slider(width/10+10, ofHeight("7/10"), "style(text:Red Range is $v" + temp + ";set(rRange,$v", redRange, 30);
+    slider(width/10+10, ofHeight("8/10"), "style(text:Green Range is $v" + temp + ";set(gRange,$v", greenRange, 30);
+    slider(width/10+10, ofHeight("9/10"), "style(text:Blue Range is $v" + temp + ";set(bRange,$v", blueRange, 30);
   }
   else if(place.equals("/help/keys.rtf")) {
     background(250);
@@ -308,6 +309,13 @@ void doAction(String action) { //Interprets general action script, specifically 
   else if(a[0].equals("error")) {
     error(a[1]);
   }
+  else if(a[0].equals("set")) { /*Added in 1.6*/
+    String name = split(a[1], ",")[0];
+    String value = split(a[1], ",")[1];
+    if(name.equals("rRange")) {redRange = int(value);}
+    else if(name.equals("gRange")) { greenRange = int(value); }
+    else if(name.equals("bRange")) { blueRange = int(value); }
+  }
 }
 int rng(int[] nums) { //Random integer generator
   return nums[int(floor(random(0,nums.length())))];
@@ -323,8 +331,8 @@ void setIntValue(String value, int amount) {
   else if(value.equals("blueRange")) { blueRange = amount; }
 }
 void slider(int x, int y, String action, int current, int range) {
-  int w = ofWidth("2/5") - 4;
-  int h = ofHeight("1/40") - 4;
+  int w = ofWidth("2/5");
+  int h = ofHeight("1/40");
   String t = "";
   int minValue = 1;
   boolean vertical = false;
@@ -345,26 +353,26 @@ void slider(int x, int y, String action, int current, int range) {
   rectMode(CORNER);
   fill(230);
   stroke(0);
-  rect(x + 2, y + 2, w, h, 5);
+  rect(x, y, w, h, 5);
   fill(200);
   if(mousePressed && mouseX >= x && mouseX <= x+w && mouseY >= y && mouseY <= y+h) {
     if(vertical == false) {
-      current = Math.round((mouseX - x)/interval) + min;
+      current = Math.min(Math.round((mouseX - x)/interval) + minValue, minValue + range);
     } else {
-      current = Math.round((mouseY - y)/interval) + min;
+      current = Math.min(Math.round((mouseY - y)/interval) + minValue, minValue + range);
     }
     String[] actions = split(action, ";");
     for(int i = 0; i < actions.length; i++) { //escape $v with $e
-      doAction(actions[i].replace("$v", Math.floor((mouseX - x)/interval)).replace("$e", "$"));
+      doAction(actions[i].replace("$v", current).replace("$e", "$"));
     }
     fill(0);
-    text(t.replace("$v", current), (x+2*(width/5)-textWidth(t+getIntValue(a)))/2, y+24);
+    text(t.replace("$v", current), (x+2*(width/5)-textWidth(t.replace("$v", current)))/2, y+16+h);
     fill(100);
   }
   if(vertical == false) {
-    rect(x + (current - min) * interval + 2, y + 2, Math.min(w, h), Math.min(w, h));
+    rect(x + ((current - minValue) * interval), y, Math.min(w, h), Math.min(w, h));
   } else {
-    rect(x + 2, y + (current - min) * interval + 2, Math.min(w, h), Math.min(w, h));
+    rect(x, y + ((current - minValue) * interval), Math.min(w, h), Math.min(w, h));
   }
 }
 void showStats() { //Shows the stats
