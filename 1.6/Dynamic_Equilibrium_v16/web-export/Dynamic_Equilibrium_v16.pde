@@ -11,13 +11,13 @@ int redRange = 1;
 int blueRange = 1;
 int greenRange = 1;
 int equalized = 0;
+int released = 0;
 var clickSound = new Audio("http://mod.zlotskiy.com/EdMaxPrime/pjs/click.ogg");
 var calmSound = new Audio("http://mod.zlotskiy.com/EdMaxPrime/pjs/exhale.ogg");
 String place = "/help/instructions.rtf";
 DPixel[][] grid; // The two dimensional array that has all the pixels in it
 Brush brush; // The user's brush
 PFont f;
-boolean released;
 boolean paused;
 boolean stats;
 boolean info;
@@ -39,17 +39,17 @@ void setup() {  //setup function called initially, only once
   brush = new Brush(128,128,128,1);
 }
 
-void draw() {  //draw function loops 
+void draw() {  //draw function loops
+  released++;
   if(place.equals("/help/instructions.rtf")){
     background(250);
     textFont(f);
     text("    Welcome to Dynamic Equilibrium. This is a visualization of the concept. In nature things tend to reach a balance. On the screen you can create colored pixels and borders. When you run the simulation all of the pixels will try to balance out their colors with their neighbors. The borders will not allow colors to be transfered to them. This allows you to create interesting chain reactions.\n    Click here to start.",5,20,width-12,200);
     //text("version 1.6",5,height);
     renderText("version 1.6 <rgb 255 0 0>BETA", 5, height);
-    button("Play","Go(/game/create",5,200);
-    button("Random","Go(/help/change.rtf",width/4,200);
-    button("Help","Go(/help/keys.rtf",2*(width/4),200);
-    button("More","none",3*(width/4),200);
+    button("Play","style(width:" + ofWidth("2/5") + ";Go(/game/create",ofWidth("3/10"),ofHeight("1/2"));
+    button("Help","style(width:" + ofWidth("2/5") + ";Go(/help/keys.rtf",ofWidth("3/10"),ofHeight("3/5"));
+    button("More","style(width:" + ofWidth("2/5") + ";Go(/game/versions",ofWidth("3/10"),ofHeight("7/10"));
   }
   else if(place.equals("/game/create")) {
     background(250);
@@ -170,17 +170,29 @@ void draw() {  //draw function loops
 void button(String t, String action, int x, int y) { //A regular button
   int h = (height/10)-4;
   int w = (width/5)-4;
+  String hoverT = t;
+  if(action.indexOf("style(") > -1) {
+    String[] params = split(split(action.substring(action.indexOf("style("), action.length), ";")[0], "(");
+    String[] pairs = split(params[1], ",");
+    for(int i = 0; i < pairs.length; i++) {
+      String name = split(pairs[i], ":")[0];
+      String value = split(pairs[i], ":")[1];
+      if(name.equals("hover-text")) hoverT = value;
+      else if(name.equals("width")) w = int(value);
+      else if(name.equals("height")) h = int(value);
+    }
+  }
   fill(240);
-  if(mousePressed && mouseX > x && mouseX < x+w && mouseY > y && mouseY < y+h) {
+  if(mouseX > x && mouseX < x+w && mouseY > y && mouseY < y+h) {
       fill(200);
-      if(released) {
+      t = hoverT;
+      if(released < 3) {
         clickSound.play();
-        if(action.indexOf(";") != -1) {
-          doAction(action.substring(0,action.indexOf(";")));
-          background(0);
-          action = action.substring(action.indexOf(";")+1,action.length);}
-        doAction(action);
-        released = false;
+        String[] actions = split(action, ";");
+        for(int i = 0; i < actions.length; i++) {
+          doAction(actions[i]);
+        }
+        released++;
       }
   }
   stroke(0);
@@ -264,7 +276,7 @@ String strToggle(boolean b) {
   else {return "on";}
 }
 void mouseReleased() { //Runs when the mouse is released
-  released = true;
+  released = 0;
 }
 void doAction(String action) { //Interprets general action script, specifically for DE
   //This bit seperates the method name from the parameters
@@ -369,15 +381,15 @@ boolean withinRange(int num, int compare, int range) {
 void keyReleased() {
   if(key != CODED) {
     if(key == 'p' || key == 'P') {
-      if(paused) {paused = false;}
-      else {paused = true;}
+      if(place.equals("/game/grid")) paused = toggle(paused);
     } //P
     else if(key == 'r' || key == 'P') {
-      doAction("grid("+str(gridSize));
+      doAction("grid(" + gridSize);
     }
     else if(key == 'm' || key == 'M') {
       paused = true;
-      place = "/game/menu";
+      if(place.equals("/game/grid")) place = "/game/menu";
+      else if(place.equals("/game/menu")) place = "/game/grid";
     }
     else if(key == 's' || key == 'S') {
       stats = toggle(stats);
