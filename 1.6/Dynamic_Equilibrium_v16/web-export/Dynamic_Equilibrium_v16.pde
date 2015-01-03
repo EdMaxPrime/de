@@ -118,9 +118,9 @@ void draw() {  //draw function loops
     holdme("-Blue","blue(-2",width/10+10+(width/5),(height/2)+(height/10));
     button("border "+strToggle(brush.border),"toggle(brdbrush",width/10+10+2*(width/5),(height/2)+(height/10));
     button("random "+strToggle(brush.random),"toggle(rndbrush",width/10+10+3*(width/5),(height/2)+(height/10));
-    slider(width/10+10, (height/2)+2*(height/10), "Red range:", "redRange", 6);
-    slider(width/10+10, (height/2)+3*(height/10), "Green range:", "greenRange", 5);
-    slider(width/10+10, (height/2)+4*(height/10), "Blue range:", "blueRange", 4);
+    slider(width/10+10, ofHeight("7/10"), "style(text:Red Range;set(rRange,$v", redRange, 6);
+    slider(width/10+10, ofHeight("8/10"), "style(text:Green Range;set(gRange,$v", greenRange, 6);
+    slider(width/10+10, ofHeight("9/10"), "style(text:Blue Range;set(bRange,$v", blueRange, 6);
   }
   else if(place.equals("/help/keys.rtf")) {
     background(250);
@@ -322,19 +322,49 @@ void setIntValue(String value, int amount) {
   else if(value.equals("greenRange")) { greenRange = amount; }
   else if(value.equals("blueRange")) { blueRange = amount; }
 }
-void slider(int x, int y, String t, String a, int range) {
+void slider(int x, int y, String action, int current, int range) {
+  int w = ofWidth("2/5") - 4;
+  int h = ofHeight("1/40") - 4;
+  String t = "";
+  int minValue = 1;
+  boolean vertical = false;
+  if(action.indexOf("style(") > -1) {
+    String[] params = split(split(action.substring(action.indexOf("style("), action.length), ";")[0], "(");
+    String[] pairs = split(params[1], ",");
+    for(int i = 0; i < pairs.length; i++) {
+      String name = split(pairs[i], ":")[0];
+      String value = split(pairs[i], ":")[1];
+      if(name.equals("vertical")) {vertical = true; w = ofWidth("1/40"); h = ofHeight("2/5");}
+      else if(name.equals("width")) w = int(value);
+      else if(name.equals("height")) h = int(value);
+      else if(name.equals("min")) {minValue = int(value); current = Math.max(minValue, current); current = Math.min(minValue + range - 1, current);}
+      else if(name.equals("text")) t = value;
+    }
+  }
+  int interval = Math.round(w/range);
   rectMode(CORNER);
   fill(230);
   stroke(0);
-  rect(x, y, 2*(width/5)-4, 10, 5);
+  rect(x + 2, y + 2, w, h, 5);
   fill(200);
-  rect(x+getIntValue(a)*range, y, 10, 10);
-  if(mousePressed && mouseX >= x && mouseX <= x+2*(width/5)-4 && mouseY >= y && mouseY <= y+10) {
-    setIntValue(a, Math.round((mouseX - x)/range));
-    fill(100);
-    rect(x+getIntValue(a)*range, y, 10, 10);
+  if(mousePressed && mouseX >= x && mouseX <= x+w && mouseY >= y && mouseY <= y+h) {
+    if(vertical == false) {
+      current = Math.round((mouseX - x)/interval) + min;
+    } else {
+      current = Math.round((mouseY - y)/interval) + min;
+    }
+    String[] actions = split(action, ";");
+    for(int i = 0; i < actions.length; i++) { //escape $v with $e
+      doAction(actions[i].replace("$v", Math.floor((mouseX - x)/interval)).replace("$e", "$"));
+    }
     fill(0);
-    text(t+getIntValue(a), (x+2*(width/5)-textWidth(t+getIntValue(a)))/2, y+24);
+    text(t.replace("$v", current), (x+2*(width/5)-textWidth(t+getIntValue(a)))/2, y+24);
+    fill(100);
+  }
+  if(vertical == false) {
+    rect(x + (current - min) * interval + 2, y + 2, Math.min(w, h), Math.min(w, h));
+  } else {
+    rect(x + 2, y + (current - min) * interval + 2, Math.min(w, h), Math.min(w, h));
   }
 }
 void showStats() { //Shows the stats
