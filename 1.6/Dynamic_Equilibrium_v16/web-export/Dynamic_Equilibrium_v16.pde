@@ -12,12 +12,15 @@ int blueRange = 1;
 int greenRange = 1;
 int equalized = 0;
 int released = 0;
+int cpl = 50;
+color selectedColor = color(128, 128, 128);
 var clickSound = new Audio("http://mod.zlotskiy.com/EdMaxPrime/pjs/click.ogg");
 var calmSound = new Audio("http://mod.zlotskiy.com/EdMaxPrime/pjs/exhale.ogg");
 String place = "/help/instructions.rtf";
 DPixel[][] grid; // The two dimensional array that has all the pixels in it
 Brush brush; // The user's brush
 PFont f;
+PImage hueAndSat;
 boolean paused;
 boolean stats;
 boolean info;
@@ -37,6 +40,15 @@ void setup() {  //setup function called initially, only once
   info = false;
   debug = false;
   brush = new Brush(128,128,128,1);
+  colorMode(HSB, 360, 100, 100);
+  hueAndSat = createImage(360, 100, RGB);
+  for(int h = 0; h < hueAndSat.width; h++) {
+    for(int s = 0; s < hueAndSat.height; s++) {
+      color c = color(h, 100 - s, 100);
+      hueAndSat.pixels[s * hueAndSat.width + h] = c;
+    }
+  }
+  colorMode(RGB, 256, 256, 256);
 }
 
 void draw() {  //draw function loops
@@ -97,31 +109,21 @@ void draw() {  //draw function loops
   else if(place.equals("/game/menu")) {
     background(250);
     fill(0);
-    text("The game is paused: "+str(paused),5,20);
-    text("To return to the simulation press Play",5,40);
-    text(str(grid[0].length),5,60);
-    text("Press \'r\' to make a new grid",5,80);
-    button("Play","Go(/game/grid;pause(false",5,100);
-    button("Main menu", "Go(/help/instructions.rtf", width/2, 100);
-    fill(brush.red,brush.green,brush.blue);
-    rect(5,height/2,width/10,height/10);
+    button("Play","Go(/game/grid;pause(false",5, 5);
+    button("Main menu", "Go(/help/instructions.rtf", 5, 5 + ofHeight("1/10"));
+    text("The game is " + booleanToString(paused, "") + " paused. Press:",ofWidth("1/5") + 5,20);
+    renderText("<rgb 0 0 200>m <rgb 64 64 64>to switch between the game and this menu\n" +
+               "<rgb 0 0 200>p <rgb 64 64 64>to toggle pause during the simulation\n" +
+               "<rgb 0 0 200>r <rgb 64 64 64>to make a new grid with these settings\n" +
+               "<rgb 0 0 200>s <rgb 64 64 64>to show statistics during the simulation\n" +
+               "<rgb 0 0 200>i <rgb 64 64 64>to inspect individual pixels\n",
+    ofWidth("1/5") + 5, 40);
     fill(0);
-    text("Press \'s\' to show stats",5,height/2-48);
-    text("Press \'m\' to return here",5,height/2-32);
-    text("Press \'r\' to make a new grid",5,height/2-16);
-    text("Brush:",5,height/2-4);
-    holdme("+Red","red(2",width/10+10,height/2);
-    holdme("-Red","red(-2",width/10+10+(width/5),height/2);
-    holdme("+Green","green(2",width/10+10+2*(width/5),height/2);
-    holdme("-Green","green(-2",width/10+10+3*(width/5),height/2);
-    holdme("+Blue","blue(2",width/10+10,(height/2)+(height/10));
-    holdme("-Blue","blue(-2",width/10+10+(width/5),(height/2)+(height/10));
-    button("border "+strToggle(brush.border),"toggle(brdbrush",width/10+10+2*(width/5),(height/2)+(height/10));
-    button("random "+strToggle(brush.random),"toggle(rndbrush",width/10+10+3*(width/5),(height/2)+(height/10));
+    colorPicker(5, ofHeight("3/10"), "brush($r,$b,$g", color(brush.red, brush.green, brush.blue));
     String temp = ",width:" + ofWidth("4/5");
-    slider(width/10+10, ofHeight("7/10"), "style(text:Red Range is $v" + temp + ";set(rRange,$v", redRange, 30);
-    slider(width/10+10, ofHeight("8/10"), "style(text:Green Range is $v" + temp + ";set(gRange,$v", greenRange, 30);
-    slider(width/10+10, ofHeight("9/10"), "style(text:Blue Range is $v" + temp + ";set(bRange,$v", blueRange, 30);
+    slider(width/10+10, ofHeight("15/20"), "style(text:Red Range is $v" + temp + ";set(rRange,$v", redRange, 30);
+    slider(width/10+10, ofHeight("17/20"), "style(text:Green Range is $v" + temp + ";set(gRange,$v", greenRange, 30);
+    slider(width/10+10, ofHeight("19/20"), "style(text:Blue Range is $v" + temp + ";set(bRange,$v", blueRange, 30);
   }
   else if(place.equals("/help/keys.rtf")) {
     background(250);
@@ -238,19 +240,50 @@ void renderText(String t, int x, int y) { /*Added in 1.6*/
       fill(currentColor);
       textFont(currentFont);
       text(texts[i], nextX, nextY);
-      nextX += textWidth(texts[i]);
+      String[] lines = split(texts[i], "\n");
+      if(lines.length == 1) nextX += textWidth(texts[i]);
+      else nextX = x + textWidth(lines[lines.length - 1]);
       nextY += (currentHeight + 5) * count(texts[i], "\n");
     }
   }
   textFont(f);
 }
-int count(String body, String search) { /*Added in 1.6*/
-  int hits = 0;
-  while(body.indexOf(search) != -1) {
-    hits++;
-    body = substring(body, 0, body.indexOf(search) + search.length());
+void colorPicker(int x, int y, String action) {
+  stroke(0);
+  image(hueAndSat, x, y, ofWidth("2/5"), ofWidth("2/5"));
+  fill(0, 0, 0, map(cpl, 0, 99, 0, 255));
+  rect(x - 1, y - 1, ofWidth("2/5") + 1, ofWidth("2/5") + 1);
+  fill(0);
+  slider(x + ofWidth("17/40"), y, "style(vertical:true,min:1;light($v", cpl, 100);
+  if(mouseX >= x && mouseX <= x + ofWidth("2/5") && mouseY >= y && mouseY <= y + ofWidth("2/5") && mousePressed) {
+    selectedColor = get(mouseX, mouseY);
   }
-  return hits;
+  noFill();
+  int ex = map(hue(selectedColor), 0, 255, 0, ofWidth("2/5"));
+  int ey = map(255 - saturation(selectedColor), 0, 255, 0, ofWidth("2/5"));
+  ellipse(x + ex, y + ey, 5, 5);
+  fill(selectedColor);
+  rect(x + ofWidth("1/2"),y,ofWidth("1/10"),ofHeight("1/10"));
+  fill(0);
+  text("R: " + floor(red(selectedColor)) +
+  "\nG: " + floor(green(selectedColor)) +
+  "\nB: " + floor(blue(selectedColor)) +
+  "\nH: " + floor(hue(selectedColor)) +
+  "\nS: " + floor(saturation(selectedColor)) +
+  "\nB: " + floor(brightness(selectedColor)),
+  x + ofWidth("1/2"), y + ofHeight("1/10") + 14);
+  String[] actions = split(action, ";");
+  for(int i = 0; i < actions.length; i++) {
+    actions[i] = actions[i].replace("$r",red(selectedColor)).replace("$g",green(selectedColor)).replace("$b",blue(selectedColor));
+    actions[i] = actions[i].replace("$h",hue(selectedColor)).replace("$s",saturation(selectedColor)).replace("$l",brightness(selectedColor));
+    doAction(actions[i].replace("$e", "$"));
+  }
+  /*button("border "+strToggle(brush.border),"toggle(brdbrush",width/10+10+2*(width/5),(height/2)+(height/10));
+  button("random "+strToggle(brush.random),"toggle(rndbrush",width/10+10+3*(width/5),(height/2)+(height/10));*/
+}
+void strColor(color c) { return "(" + floor(red(c)) + ", " + floor(green(c)) + "," + floor(blue(c)) + ")"; }
+int count(String body, String search) { /*Added in 1.6*/
+  return split(body, search).length - 1;
 }
 int centerX(String t, int w, int x) { //This method returns the x position of horizontally aligned text
   return ((w-textWidth(t))/2)+x;
@@ -316,6 +349,15 @@ void doAction(String action) { //Interprets general action script, specifically 
     else if(name.equals("gRange")) { greenRange = int(value); }
     else if(name.equals("bRange")) { blueRange = int(value); }
   }
+  else if(a[0].equals("brush")) { /*Added in 1.6*/
+    String[] c = split(a[1], ",");
+    brush.red = int(c[0]);
+    brush.green = int(c[1]);
+    brush.blue = int(c[2]);
+  }
+  else if(a[0].equals("light")) {/*Added in 1.6*/
+    cpl = int(a[1]);
+  }
 }
 int rng(int[] nums) { //Random integer generator
   return nums[int(floor(random(0,nums.length())))];
@@ -330,10 +372,14 @@ void setIntValue(String value, int amount) {
   else if(value.equals("greenRange")) { greenRange = amount; }
   else if(value.equals("blueRange")) { blueRange = amount; }
 }
-void slider(int x, int y, String action, int current, int range) {
+int slider(int x, int y, String action, int current, int range) {
   int w = ofWidth("2/5");
   int h = ofHeight("1/40");
-  String t = "";
+  String t = "$v";
+  int textX = (x+2*(width/5)-textWidth(t.replace("$v", current)))/2;
+  int textY = y + 16 + h;
+  color dragger = color(200);
+  color dragColor = color(100);
   int minValue = 1;
   boolean vertical = false;
   if(action.indexOf("style(") > -1) {
@@ -347,33 +393,43 @@ void slider(int x, int y, String action, int current, int range) {
       else if(name.equals("height")) h = int(value);
       else if(name.equals("min")) {minValue = int(value); current = Math.max(minValue, current); current = Math.min(minValue + range - 1, current);}
       else if(name.equals("text")) t = value;
+      else if(name.equals("d")) {String[] d = split(value, "|"); dragger = color(int(d[0]), int(d[1]), int(d[2]));}
+      else if(name.equals("d-h")) {String[] d = split(value, "|"); dragColor = color(int(d[0]), int(d[1]), int(d[2]));}
     }
   }
-  int interval = Math.round(w/range);
+  int interval = vertical? Math.round(h/range) : Math.round(w/range);
   rectMode(CORNER);
   fill(230);
   stroke(0);
   rect(x, y, w, h, 5);
-  fill(200);
+  fill(dragger);
   if(mousePressed && mouseX >= x && mouseX <= x+w && mouseY >= y && mouseY <= y+h) {
     if(vertical == false) {
       current = Math.min(Math.round((mouseX - x)/interval) + minValue, minValue + range);
     } else {
-      current = Math.min(Math.round((mouseY - y)/interval) + minValue, minValue + range);
+      current = Math.min(Math.round(map(mouseY - y, 0, h, minValue, minValue + range)), minValue + range); //Math.round((mouseY - y)/interval) + minValue;
     }
     String[] actions = split(action, ";");
     for(int i = 0; i < actions.length; i++) { //escape $v with $e
       doAction(actions[i].replace("$v", current).replace("$e", "$"));
     }
-    fill(0);
-    text(t.replace("$v", current), (x+2*(width/5)-textWidth(t.replace("$v", current)))/2, y+16+h);
-    fill(100);
+    fill(dragColor);
   }
   if(vertical == false) {
     rect(x + ((current - minValue) * interval), y, Math.min(w, h), Math.min(w, h));
   } else {
-    rect(x, y + ((current - minValue) * interval), Math.min(w, h), Math.min(w, h));
+    rect(x, y + (current - minValue) * (h/range), Math.min(w, h), Math.min(w, h));
   }
+  fill(0);
+  if(vertical == false) {
+    textX = (x + ofWidth("2/5") - textWidth(t.replace("$v", current)))/2;
+    textY = y + 16 + h;
+  } else {
+    textX = x + w + 4;
+    textY = y + current * (h/range) + 12;
+  }
+  text(t.replace("$v", current), textX, textY);
+  return current;
 }
 void showStats() { //Shows the stats
  if(stats) {
@@ -415,6 +471,15 @@ boolean withinRange(int num, int compare, int range) {
   } else {
     return false;
   }
+}
+String booleanToString(boolean b, String type) { /*Added in 1.6*/
+  if(type.indexOf("!") != -1) { b = toggle(b); type = type.substring(1, type.length); }
+  if(type.equals("is")) return b? "is" : "is not"
+  if(type.equals("are")) return b? "are" : "are not"
+  if(type.equals("on")) return b? "on" : "off";
+  if(type.equals("")) return b? "" : "not";
+  if(type.equals("no")) return b? "" : "no";
+  if(type.equals("yn")) return b? "yes" : "no";
 }
 void keyReleased() {
   if(key != CODED) {
